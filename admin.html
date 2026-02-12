@@ -1,38 +1,71 @@
 <!DOCTYPE html>
-<html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<title>Adminpanel – Markuss</title>
+<style>
+body{font-family:'Courier New',monospace;background:#0b0b0b;color:#00ffcc;padding:20px;}
+h2,h3{color:#00ffcc;text-shadow:0 0 10px #00ffcc;}
+.box{background:rgba(0,0,0,0.6);padding:15px;margin:10px 0;border:2px solid #00ffcc;border-radius:10px;}
+button{margin-left:5px;padding:5px 10px;background:#00ffcc;color:black;border:2px solid #00ffcc;cursor:pointer;transition:0.3s;}
+button:hover{background:black;color:#00ffcc;box-shadow:0 0 15px #00ffcc;}
+</style>
+</head>
 <body>
-<h2>Adminpanel – Markuss</h2>
-<div id="list"></div>
+
+<h2>🧑‍💼 Adminpanel – Markuss</h2>
+
+<hr>
+<h3>📋 Pending-søknader</h3>
+<div id="pendingList"></div>
+
+<hr>
+<h3>📊 Elevundersøkelse – svar</h3>
+<div id="surveyList"></div>
 
 <script>
+// tilgangssjekk
 if(localStorage.getItem("role")!=="admin"){
   document.body.innerHTML="ACCESS DENIED";
 }
 
-let pending = JSON.parse(localStorage.getItem("pending") || "[]");
-const list = document.getElementById("list");
-
-pending.forEach((p,i)=>{
-  const div = document.createElement("div");
-  div.innerHTML = `
-    ${p.name} (${p.year})
-    <button onclick="approve(${i})">Godkjenn</button>
-    <button onclick="deny(${i})">Avslå</button>
-  `;
-  list.appendChild(div);
-});
-
+// Pending
+function loadPending(){
+  const pending = JSON.parse(localStorage.getItem("pending")||"[]");
+  const div = document.getElementById("pendingList");
+  div.innerHTML="";
+  pending.forEach((p,i)=>{
+    const d = document.createElement("div");
+    d.className="box";
+    d.innerHTML=`${p.name} (${p.year}) <button onclick="approve(${i})">Godkjenn</button> <button onclick="deny(${i})">Avslå</button>`;
+    div.appendChild(d);
+  });
+}
 function approve(i){
+  const pending = JSON.parse(localStorage.getItem("pending")||"[]");
   pending.splice(i,1);
   localStorage.setItem("pending",JSON.stringify(pending));
-  location.reload();
+  loadPending();
 }
-
 function deny(i){
+  const pending = JSON.parse(localStorage.getItem("pending")||"[]");
   pending.splice(i,1);
   localStorage.setItem("pending",JSON.stringify(pending));
-  location.reload();
+  loadPending();
 }
+loadPending();
+
+// Survey
+const surveyDiv=document.getElementById("surveyList");
+const survey=JSON.parse(localStorage.getItem("survey")||"[]");
+survey.forEach(s=>{
+  const d=document.createElement("div");
+  d.className="box";
+  d.innerHTML=`<b>${s.name}</b><br>Trivsel: ${s.trivsel}<br>Hørt: ${s.hørt}<br>Kommentar: ${s.kommentar||"-"}<br><small>${s.time}</small>`;
+  surveyDiv.appendChild(d);
+});
 </script>
+
 </body>
 </html>
+
