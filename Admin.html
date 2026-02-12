@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h2>Adminpanel – Markuss</h2>
+<div id="list"></div>
+
+<script>
+if(localStorage.getItem("role")!=="admin"){
+  document.body.innerHTML="ACCESS DENIED";
+}
+
+let pending = JSON.parse(localStorage.getItem("pending") || "[]");
+const list = document.getElementById("list");
+
+pending.forEach((p,i)=>{
+  const div = document.createElement("div");
+  div.innerHTML = `
+    ${p.name} (${p.year})
+    <button onclick="approve(${i})">Godkjenn</button>
+    <button onclick="deny(${i})">Avslå</button>
+  `;
+  list.appendChild(div);
+});
+
+function approve(i){
+  pending.splice(i,1);
+  localStorage.setItem("pending",JSON.stringify(pending));
+  location.reload();
+}
+
+function deny(i){
+  pending.splice(i,1);
+  localStorage.setItem("pending",JSON.stringify(pending));
+  location.reload();
+}
+</script>
+</body>
+</html>
