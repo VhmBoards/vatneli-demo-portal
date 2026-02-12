@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<title>Elevregistrering</title>
+</head>
+<body>
+<h2>Elevregistrering</h2>
+
+<input id="name" placeholder="Navn"><br><br>
+<input id="year" type="number" placeholder="Fødselsår"><br><br>
+<button onclick="signup()">Send søknad</button>
+
+<p id="msg"></p>
+
+<script>
+function signup(){
+  const year = Number(document.getElementById("year").value);
+  const name = document.getElementById("name").value;
+
+  if(year <= 2010){
+    document.getElementById("msg").innerText =
+      "Adgang nektet av brannmur (alderskrav)";
+    return;
+  }
+
+  let pending = JSON.parse(localStorage.getItem("pending") || "[]");
+  pending.push({name,year});
+  localStorage.setItem("pending",JSON.stringify(pending));
+
+  document.getElementById("msg").innerText =
+    "Søknad sendt. Venter på godkjenning.";
+}
+</script>
+</body>
+</html>
