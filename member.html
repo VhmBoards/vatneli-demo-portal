@@ -1,13 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<title>Vatneli Demo – Medlemsside</title>
+<style>
+body {
+  background: linear-gradient(135deg,#0b0b0b,#101010);
+  font-family: 'Courier New', monospace;
+  color:#00ffcc;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  min-height:100vh;
+  margin:0;
+  padding:20px;
+}
+h1{
+  text-shadow:0 0 10px #00ffcc,0 0 20px #00ffcc;
+  margin-bottom:20px;
+}
+ul{list-style:none;padding:0;}
+li{margin:10px 0;}
+a, button{
+  display:inline-block;
+  padding:10px 20px;
+  text-decoration:none;
+  color:black;
+  background:#00ffcc;
+  border:2px solid #00ffcc;
+  border-radius:6px;
+  cursor:pointer;
+  transition:0.3s;
+  font-weight:bold;
+  text-align:center;
+}
+a:hover,button:hover{
+  background:black;
+  color:#00ffcc;
+  box-shadow:0 0 15px #00ffcc,0 0 30px #00ffcc inset;
+  transform:scale(1.05);
+}
+.box{
+  background:rgba(0,0,0,0.6);
+  padding:20px;
+  margin:15px 0;
+  border:2px solid #00ffcc;
+  border-radius:10px;
+  width:350px;
+  text-align:center;
+  animation:glow 2s infinite alternate;
+}
+@keyframes glow{
+  from{box-shadow:0 0 5px #00ffcc;}
+  to{box-shadow:0 0 20px #00ffcc;}
+}
+</style>
+</head>
 <body>
-<h2>Medlemsside</h2>
-<p>Velkommen elev</p>
+
+<h1>🛸 Vatneli Demo – Medlemsside</h1>
+
+<div class="box">
 <ul>
-<li><a href="reviews.html">Legg igjen review</a></li>
-<li><a href="chat.html">Chatwall</a></li>
-<li><a href="survey.html">Elevundersøkelse</a></li>
-<li><a href="chat.html">Chatwall</a></li>
+  <li><a href="reviews.html">Legg igjen review</a></li>
+  <li><a href="chat.html">Chatwall</a></li>
+  <li><a href="survey.html">Elevundersøkelse</a></li>
+  <li><a href="avatar.html">Lag din Avatar</a></li>
+  <li><button onclick="location.href='signup.html'">Sign Up Ny Elev</button></li>
 </ul>
+</div>
+
+<script>
+// tilgangssjekk
+if(localStorage.getItem("role")!=="student" && localStorage.getItem("role")!=="admin"){
+  document.body.innerHTML="<h2>ACCESS DENIED</h2>";
+}
+</script>
+
 </body>
 </html>
