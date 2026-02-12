@@ -15,14 +15,8 @@ body {
   align-items: center;
   min-height: 100vh;
 }
-h1, h2 {
+h1 {
   text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc;
-  margin-bottom: 10px;
-}
-#chat {
-  width: 90%;
-  max-width: 600px;
-  margin-top: 20px;
 }
 textarea {
   width: 90%;
@@ -50,9 +44,10 @@ button:hover {
   box-shadow: 0 0 15px #00ffcc, 0 0 30px #00ffcc inset;
   transform: scale(1.05);
 }
-label {
-  font-size: 14px;
-  margin-top: 10px;
+#chat {
+  width: 90%;
+  max-width: 600px;
+  margin-top: 20px;
 }
 .box {
   background: rgba(0,0,0,0.6);
@@ -81,63 +76,91 @@ label {
 <body>
 
 <h1>💬 Vatneli Chatwall</h1>
-<p>Kun medlemmer – post med navn eller anonymt</p>
+<p>Post med navn eller anonymt</p>
 
 <label><input type="checkbox" id="anon"> Post anonymt</label><br>
 <textarea id="msg" placeholder="Skriv melding..."></textarea><br>
 <button onclick="post()">Send</button>
 
 <div id="chat"></div>
+<p id="pointsDisplay"></p>
 
 <script>
-// tilgangssjekk
+// ==== TILGANGSSJEKK ====
 if(!localStorage.getItem("role")){
   document.body.innerHTML = "<h2>ACCESS DENIED</h2>";
 }
 
-// Hent avatar fra localStorage
+// ==== HENT AVATAR ====
 function getAvatar(){
-  return JSON.parse(localStorage.getItem("avatar")||'{"hair":"#00ffcc","eyes":"#00ffcc","skin":"#222222"}');
+  // Hvis eleven har tatt bilde i avatar.html
+  const avatarImg = localStorage.getItem("avatarImg");
+  if(avatarImg) return {type:"img", src: avatarImg};
+  // Hvis ikke: fallback til farger
+  const av = JSON.parse(localStorage.getItem("avatar")||'{"hair":"#00ffcc","eyes":"#00ffcc","skin":"#222222"}');
+  return {type:"color", hair:av.hair, eyes:av.eyes, skin:av.skin};
 }
 
-// Last meldinger
+// ==== SJEKK TID (Suspicious mode) ====
+function isSuspicious(){
+  const now = new Date();
+  const h = now.getHours();
+  const m = now.getMinutes();
+  // 09:00–14:30
+  return ((h === 9 && m >=0) || (h > 9 && h < 14) || (h === 14 && m <=30)) 
+          && localStorage.getItem("role") !== "admin";
+}
+
+// ==== POENGSYSTEM ====
+function addPoints(n){
+  let points = parseInt(localStorage.getItem("points")||0);
+  points += n;
+  localStorage.setItem("points", points);
+  document.getElementById("pointsDisplay").innerText = "Poeng: " + points;
+}
+
+// ==== LAST CHAT ====
 function load(){
   const chat = document.getElementById("chat");
   chat.innerHTML = "";
   const msgs = JSON.parse(localStorage.getItem("chat")||"[]");
   msgs.forEach(m=>{
-    const avatar = m.avatar || getAvatar();
     const box = document.createElement("div");
     box.className = "box";
-    box.innerHTML = `
-      <div class="avatar-circle" style="background:${avatar.skin};border-color:${avatar.hair};box-shadow:0 0 5px ${avatar.eyes}, inset 0 0 3px ${avatar.hair};"></div>
-      <div>
-        <b>${m.name}</b>: ${m.text}<br>
-        <small>${m.time}</small>
-      </div>`;
+    if(m.avatar.type==="img"){
+      box.innerHTML = `<img src="${m.avatar.src}" class="avatar-circle"><div><b>${m.name}</b>: ${m.text}<br><small>${m.time}</small></div>`;
+    } else {
+      box.innerHTML = `<div class="avatar-circle" style="background:${m.avatar.skin};border-color:${m.avatar.hair};box-shadow:0 0 5px ${m.avatar.eyes}, inset 0 0 3px ${m.avatar.hair};"></div>
+                       <div><b>${m.name}</b>: ${m.text}<br><small>${m.time}</small></div>`;
+    }
     chat.appendChild(box);
   });
 }
 
-// Send melding
+// ==== POST MELDING ====
 function post(){
+  if(isSuspicious()){
+    alert("⚠️ Begrenset tilgang mellom 09:00–14:30. Du kan ikke poste nå.");
+    return;
+  }
   const text = document.getElementById("msg").value;
   if(!text) return;
   const anon = document.getElementById("anon").checked;
   const name = anon ? "Anonym elev" : (localStorage.getItem("name") || "Elev");
   const avatar = getAvatar();
   let msgs = JSON.parse(localStorage.getItem("chat")||"[]");
-  msgs.push({name,text,time:new Date().toLocaleString(),avatar});
-  localStorage.setItem("chat",JSON.stringify(msgs));
+  msgs.push({name, text, time: new Date().toLocaleString(), avatar});
+  localStorage.setItem("chat", JSON.stringify(msgs));
   document.getElementById("msg").value = "";
   load();
+  addPoints(5); // +5 poeng per melding
 }
-  const avatar = localStorage.getItem("avatarImg");
 
-
-// Last meldinger ved oppstart
+// ==== INIT ====
 load();
+document.getElementById("pointsDisplay").innerText = "Poeng: " + (localStorage.getItem("points")||0);
 </script>
 
 </body>
 </html>
+
