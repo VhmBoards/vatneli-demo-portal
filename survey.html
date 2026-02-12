@@ -3,64 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <title>Elevundersøkelse</title>
+<style>
+body{font-family:'Courier New',monospace;background:#101010;color:#00ffcc;padding:20px;}
+h2{text-shadow:0 0 10px #00ffcc;}
+input,textarea,select{width:90%;padding:6px;margin:6px 0;background:black;color:#00ffcc;border:1px solid #00ffcc;}
+button{padding:8px 16px;background:#00ffcc;color:black;border:2px solid #00ffcc;cursor:pointer;}
+button:hover{background:black;color:#00ffcc;box-shadow:0 0 15px #00ffcc;}
+</style>
 </head>
 <body>
-
 <h2>📊 Elevundersøkelse</h2>
-<p>Kun for elever – fiktiv demo</p>
-
 <form onsubmit="send(event)">
-  <label>
-    Hvordan trives du på skolen? (1–5)<br>
-    <input type="number" min="1" max="5" id="trivsel" required>
-  </label>
-  <br><br>
-
-  <label>
-    Føler du at elevene blir hørt?<br>
-    <select id="hørt">
-      <option>Ja</option>
-      <option>Nei</option>
-      <option>Av og til</option>
-    </select>
-  </label>
-  <br><br>
-
-  <label>
-    Kommentar (valgfritt)<br>
-    <textarea id="kommentar" rows="3"></textarea>
-  </label>
-  <br><br>
-
-  <button type="submit">Send svar</button>
+<label>Hvordan trives du på skolen? (1-5)<br><input type="number" min="1" max="5" id="trivsel" required></label><br>
+<label>Føler du at elevene blir hørt?<br>
+<select id="hørt"><option>Ja</option><option>Nei</option><option>Av og til</option></select></label><br>
+<label>Kommentar (valgfritt)<br><textarea id="kommentar" rows="3"></textarea></label><br>
+<button type="submit">Send svar</button>
 </form>
-
 <p id="msg"></p>
-
 <script>
-// tilgangssjekk
-if(!localStorage.getItem("role")){
-  document.body.innerHTML = "ACCESS DENIED BY FIREWALL";
-}
-
+if(!localStorage.getItem("role")){document.body.innerHTML="ACCESS DENIED";}
 function send(e){
   e.preventDefault();
-
-  let data = JSON.parse(localStorage.getItem("survey") || "[]");
-
-  data.push({
-    name: localStorage.getItem("name") || "Anonym elev",
-    trivsel: document.getElementById("trivsel").value,
-    hørt: document.getElementById("hørt").value,
-    kommentar: document.getElementById("kommentar").value,
-    time: new Date().toLocaleString()
-  });
-
-  localStorage.setItem("survey", JSON.stringify(data));
-  document.getElementById("msg").innerText =
-    "Svar sendt. Takk!";
+  let data=JSON.parse(localStorage.getItem("survey")||"[]");
+  data.push({name:localStorage.getItem("name")||"Anonym elev",trivsel:document.getElementById("trivsel").value,hørt:document.getElementById("hørt").value,kommentar:document.getElementById("kommentar").value,time:new Date().toLocaleString()});
+  localStorage.setItem("survey",JSON.stringify(data));
+  document.getElementById("msg").innerText="Svar sendt. Takk!";
 }
 </script>
-
 </body>
 </html>
