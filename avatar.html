@@ -1,42 +1,52 @@
 <!DOCTYPE html>
-<html lang="no">
+<html>
 <head>
 <meta charset="UTF-8">
 <title>Lag Avatar</title>
 <style>
-body{font-family:'Courier New',monospace;background:#0b0b0b;color:#00ffcc;padding:20px;text-align:center;}
-h2{text-shadow:0 0 10px #00ffcc;}
-input,select,button{margin:6px;padding:6px;background:black;color:#00ffcc;border:1px solid #00ffcc;}
-button{cursor:pointer;transition:0.3s;}
-button:hover{background:#00ffcc;color:black;}
-#avatar{width:100px;height:100px;margin:20px auto;border:2px solid #00ffcc;border-radius:50%;background:#111;}
+body {
+  background:black;
+  color:#00ffcc;
+  font-family:monospace;
+  text-align:center;
+}
+video, canvas {
+  border:2px solid #00ffcc;
+  border-radius:12px;
+  margin:10px;
+}
+button {
+  padding:10px;
+  background:#00ffcc;
+  border:none;
+  font-weight:bold;
+  cursor:pointer;
+}
 </style>
 </head>
 <body>
 
-<h2>🎨 Lag Avatar</h2>
+<h1>📸 Elev‑Avatar</h1>
 
-<label>Hårfarge: <input type="color" id="hair" value="#00ffcc"></label><br>
-<label>Øyefarge: <input type="color" id="eyes" value="#00ffcc"></label><br>
-<label>Hudfarge: <input type="color" id="skin" value="#222222"></label><br><br>
-<button onclick="updateAvatar()">Oppdater Avatar</button>
-<div id="avatar"></div>
-<p>Din avatar lagres lokalt og brukes i chat</p>
+<video id="video" width="240" autoplay></video><br>
+<button onclick="snap()">Ta bilde</button><br>
+<canvas id="canvas" width="240" height="180"></canvas><br>
+<button onclick="save()">Lagre avatar</button>
 
 <script>
-function updateAvatar(){
-  const hair=document.getElementById("hair").value;
-  const eyes=document.getElementById("eyes").value;
-  const skin=document.getElementById("skin").value;
-  const avatar=document.getElementById("avatar");
-  avatar.style.background=skin;
-  avatar.style.boxShadow=`0 0 10px ${hair}, inset 0 0 5px ${eyes}`;
-  localStorage.setItem("avatar",JSON.stringify({hair,eyes,skin}));
+const video = document.getElementById("video");
+navigator.mediaDevices.getUserMedia({ video: true })
+  .then(stream => video.srcObject = stream);
+
+function snap(){
+  const c = canvas.getContext("2d");
+  c.drawImage(video,0,0,240,180);
 }
-// last avatar
-const av=JSON.parse(localStorage.getItem("avatar")||'{"hair":"#00ffcc","eyes":"#00ffcc","skin":"#222222"}');
-document.getElementById("avatar").style.background=av.skin;
-document.getElementById("avatar").style.boxShadow=`0 0 10px ${av.hair}, inset 0 0 5px ${av.eyes}`;
+
+function save(){
+  localStorage.setItem("avatarImg", canvas.toDataURL());
+  alert("Avatar lagret!");
+}
 </script>
 
 </body>
