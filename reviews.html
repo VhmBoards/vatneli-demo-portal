@@ -2,75 +2,48 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Vatneli – Reviews</title>
+<title>Reviews</title>
 <style>
-body { font-family: Arial; background:#f4f4f4; padding:20px; }
-.box { background:white; padding:15px; margin-bottom:15px; border-radius:6px; }
-.demo { color:#666; font-style:italic; }
+body{font-family:'Courier New',monospace;background:#101010;color:#00ffcc;padding:20px;}
+h2{color:#00ffcc;text-shadow:0 0 10px #00ffcc;}
+.box{background:rgba(0,0,0,0.6);padding:15px;margin:10px 0;border:2px solid #00ffcc;border-radius:10px;animation:glow 2s infinite alternate;}
+@keyframes glow{from{box-shadow:0 0 5px #00ffcc;}to{box-shadow:0 0 20px #00ffcc;}}
+textarea{width:90%;background:black;color:#00ffcc;border:1px solid #00ffcc;padding:8px;}
+button{padding:8px 16px;background:#00ffcc;color:black;border:2px solid #00ffcc;cursor:pointer;}
+button:hover{background:black;color:#00ffcc;box-shadow:0 0 15px #00ffcc;}
 </style>
 </head>
 <body>
 
-<h2>Vatneli School – Reviews</h2>
-<p class="demo">⚠️ Denne siden skal BARE brukes av utvalgte elever!</p>
-
+<h2>⭐ Vatneli Reviews</h2>
+<p class="demo">⚠️ Ekte</p>
 <div id="demoReviews"></div>
-
 <hr>
-
-<h3>Legg igjen elev-review</h3>
-<textarea id="text" rows="4" cols="40" placeholder="Skriv din mening"></textarea><br><br>
+<h3>Legg igjen review</h3>
+<textarea id="text" rows="4"></textarea><br><br>
 <button onclick="addReview()">Send</button>
-
 <div id="userReviews"></div>
 
 <script>
-/* ---------- DEMO REVIEWS ---------- */
-const baseDemo = [
-  "Skolen har et greit miljø og hyggelige lærere.",
-  "Undervisningen er ganske bra, men kan bli bedre.",
-  "Jeg liker skolegården og friminuttene."
-];
-
-function getDemoReviews(){
-  const day = new Date().getDate();
-  return baseDemo.map(r => {
-    if(day % 2 === 0) return r.replace("bra","helt ok");
-    return r;
-  });
-}
-
-const demoBox = document.getElementById("demoReviews");
-getDemoReviews().forEach(r=>{
-  demoBox.innerHTML += `
-    <div class="box demo">
-      ${r}<br>
-      <small>Automatisk generert demo-innhold</small>
-    </div>`;
+const baseDemo=["Skolen har et greit miljø.","Undervisningen er ganske bra.","Jeg liker friminuttene."];
+const day=new Date().getDate();
+const demoBox=document.getElementById("demoReviews");
+baseDemo.forEach(r=>{
+  let txt=day%2===0?r.replace("bra","helt ok"):r;
+  demoBox.innerHTML+=`<div class="box demo">${txt}<br><small>Demo-innhold</small></div>`;
 });
 
-/* ---------- ELEV REVIEWS ---------- */
 function addReview(){
-  const text = document.getElementById("text").value;
+  const text=document.getElementById("text").value;
   if(!text) return;
-
-  let reviews = JSON.parse(localStorage.getItem("reviews")||"[]");
-  reviews.push({
-    name: localStorage.getItem("name") || "Anonym elev",
-    text,
-    date: new Date().toLocaleDateString()
-  });
+  const reviews=JSON.parse(localStorage.getItem("reviews")||"[]");
+  reviews.push({name:localStorage.getItem("name")||"Anonym elev",text,date:new Date().toLocaleDateString()});
   localStorage.setItem("reviews",JSON.stringify(reviews));
   location.reload();
 }
-
-const userBox = document.getElementById("userReviews");
+const userBox=document.getElementById("userReviews");
 (JSON.parse(localStorage.getItem("reviews")||"[]")).forEach(r=>{
-  userBox.innerHTML += `
-    <div class="box">
-      <b>${r.name}</b> (${r.date})<br>
-      ${r.text}
-    </div>`;
+  userBox.innerHTML+=`<div class="box"><b>${r.name}</b> (${r.date})<br>${r.text}</div>`;
 });
 </script>
 
