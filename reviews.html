@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<title>Vatneli – Reviews</title>
+<style>
+body { font-family: Arial; background:#f4f4f4; padding:20px; }
+.box { background:white; padding:15px; margin-bottom:15px; border-radius:6px; }
+.demo { color:#666; font-style:italic; }
+</style>
+</head>
+<body>
+
+<h2>Vatneli School – Reviews</h2>
+<p class="demo">⚠️ Dette er en fiktiv demo-side</p>
+
+<div id="demoReviews"></div>
+
+<hr>
+
+<h3>Legg igjen elev-review</h3>
+<textarea id="text" rows="4" cols="40" placeholder="Skriv din mening"></textarea><br><br>
+<button onclick="addReview()">Send</button>
+
+<div id="userReviews"></div>
+
+<script>
+/* ---------- DEMO REVIEWS ---------- */
+const baseDemo = [
+  "Skolen har et greit miljø og hyggelige lærere.",
+  "Undervisningen er ganske bra, men kan bli bedre.",
+  "Jeg liker skolegården og friminuttene."
+];
+
+function getDemoReviews(){
+  const day = new Date().getDate();
+  return baseDemo.map(r => {
+    if(day % 2 === 0) return r.replace("bra","helt ok");
+    return r;
+  });
+}
+
+const demoBox = document.getElementById("demoReviews");
+getDemoReviews().forEach(r=>{
+  demoBox.innerHTML += `
+    <div class="box demo">
+      ${r}<br>
+      <small>Automatisk generert demo-innhold</small>
+    </div>`;
+});
+
+/* ---------- ELEV REVIEWS ---------- */
+function addReview(){
+  const text = document.getElementById("text").value;
+  if(!text) return;
+
+  let reviews = JSON.parse(localStorage.getItem("reviews")||"[]");
+  reviews.push({
+    name: localStorage.getItem("name") || "Anonym elev",
+    text,
+    date: new Date().toLocaleDateString()
+  });
+  localStorage.setItem("reviews",JSON.stringify(reviews));
+  location.reload();
+}
+
+const userBox = document.getElementById("userReviews");
+(JSON.parse(localStorage.getItem("reviews")||"[]")).forEach(r=>{
+  userBox.innerHTML += `
+    <div class="box">
+      <b>${r.name}</b> (${r.date})<br>
+      ${r.text}
+    </div>`;
+});
+</script>
+
+</body>
+</html>
