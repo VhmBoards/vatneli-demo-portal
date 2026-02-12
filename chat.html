@@ -2,46 +2,140 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Chatwall</title>
+<title>Vatneli Chatwall</title>
 <style>
-body{font-family:'Courier New',monospace;background:#0b0b0b;color:#00ffcc;padding:20px;}
-h2{text-shadow:0 0 10px #00ffcc;}
-textarea{width:90%;background:black;color:#00ffcc;border:1px solid #00ffcc;padding:8px;}
-button{padding:8px 16px;background:#00ffcc;color:black;border:2px solid #00ffcc;cursor:pointer;}
-button:hover{background:black;color:#00ffcc;box-shadow:0 0 15px #00ffcc;}
-.box{background:rgba(0,0,0,0.6);padding:10px;margin:10px 0;border:2px solid #00ffcc;border-radius:10px;animation:glow 2s infinite alternate;}
-@keyframes glow{from{box-shadow:0 0 5px #00ffcc;}to{box-shadow:0 0 20px #00ffcc;}}
+body {
+  margin: 0;
+  padding: 20px;
+  font-family: 'Courier New', monospace;
+  background: linear-gradient(135deg, #0b0b0b, #101010);
+  color: #00ffcc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+h1, h2 {
+  text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc;
+  margin-bottom: 10px;
+}
+#chat {
+  width: 90%;
+  max-width: 600px;
+  margin-top: 20px;
+}
+textarea {
+  width: 90%;
+  max-width: 600px;
+  height: 80px;
+  background: #111;
+  color: #00ffcc;
+  border: 1px solid #00ffcc;
+  padding: 10px;
+  resize: none;
+}
+button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background: #00ffcc;
+  color: black;
+  border: 2px solid #00ffcc;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+button:hover {
+  background: black;
+  color: #00ffcc;
+  box-shadow: 0 0 15px #00ffcc, 0 0 30px #00ffcc inset;
+  transform: scale(1.05);
+}
+label {
+  font-size: 14px;
+  margin-top: 10px;
+}
+.box {
+  background: rgba(0,0,0,0.6);
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 12px;
+  border: 2px solid #00ffcc;
+  animation: glow 2s infinite alternate;
+  display: flex;
+  align-items: center;
+}
+.avatar-circle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 12px;
+  flex-shrink: 0;
+  border: 2px solid #00ffcc;
+}
+@keyframes glow {
+  from { box-shadow: 0 0 5px #00ffcc; }
+  to { box-shadow: 0 0 20px #00ffcc; }
+}
 </style>
 </head>
 <body>
-<h2>💬 Elev Chatwall</h2>
-<p>Kun medlemmer – demo</p>
-<label><input type="checkbox" id="anon"> Post anonymt</label><br><br>
-<textarea id="msg" rows="3"></textarea><br><br>
+
+<h1>💬 Vatneli Chatwall</h1>
+<p>Kun medlemmer – post med navn eller anonymt</p>
+
+<label><input type="checkbox" id="anon"> Post anonymt</label><br>
+<textarea id="msg" placeholder="Skriv melding..."></textarea><br>
 <button onclick="post()">Send</button>
-<hr>
+
 <div id="chat"></div>
 
 <script>
-if(!localStorage.getItem("role")){document.body.innerHTML="ACCESS DENIED";}
+// tilgangssjekk
+if(!localStorage.getItem("role")){
+  document.body.innerHTML = "<h2>ACCESS DENIED</h2>";
+}
+
+// Hent avatar fra localStorage
+function getAvatar(){
+  return JSON.parse(localStorage.getItem("avatar")||'{"hair":"#00ffcc","eyes":"#00ffcc","skin":"#222222"}');
+}
+
+// Last meldinger
 function load(){
-  const chat=document.getElementById("chat");chat.innerHTML="";
-  (JSON.parse(localStorage.getItem("chat")||"[]")).forEach(m=>{
-    chat.innerHTML+=`<div class="box"><b>${m.name}</b>: ${m.text}<br><small>${m.time}</small></div>`;
+  const chat = document.getElementById("chat");
+  chat.innerHTML = "";
+  const msgs = JSON.parse(localStorage.getItem("chat")||"[]");
+  msgs.forEach(m=>{
+    const avatar = m.avatar || getAvatar();
+    const box = document.createElement("div");
+    box.className = "box";
+    box.innerHTML = `
+      <div class="avatar-circle" style="background:${avatar.skin};border-color:${avatar.hair};box-shadow:0 0 5px ${avatar.eyes}, inset 0 0 3px ${avatar.hair};"></div>
+      <div>
+        <b>${m.name}</b>: ${m.text}<br>
+        <small>${m.time}</small>
+      </div>`;
+    chat.appendChild(box);
   });
 }
+
+// Send melding
 function post(){
-  const text=document.getElementById("msg").value;if(!text)return;
-  const anon=document.getElementById("anon").checked;
-  const name=anon?"Anonym elev":localStorage.getItem("name")||"Elev";
-  let msgs=JSON.parse(localStorage.getItem("chat")||"[]");
-  msgs.push({name,text,time:new Date().toLocaleString()});
+  const text = document.getElementById("msg").value;
+  if(!text) return;
+  const anon = document.getElementById("anon").checked;
+  const name = anon ? "Anonym elev" : (localStorage.getItem("name") || "Elev");
+  const avatar = getAvatar();
+  let msgs = JSON.parse(localStorage.getItem("chat")||"[]");
+  msgs.push({name,text,time:new Date().toLocaleString(),avatar});
   localStorage.setItem("chat",JSON.stringify(msgs));
-  document.getElementById("msg").value="";
+  document.getElementById("msg").value = "";
   load();
 }
+
+// Last meldinger ved oppstart
 load();
 </script>
+
 </body>
 </html>
-
