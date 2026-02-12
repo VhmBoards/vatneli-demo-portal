@@ -2,72 +2,46 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Elev Chatwall</title>
+<title>Chatwall</title>
 <style>
-body { font-family: Arial; background:#eef; padding:20px; }
-.box { background:white; padding:10px; margin-bottom:10px; border-radius:6px; }
-small { color:#666; }
+body{font-family:'Courier New',monospace;background:#0b0b0b;color:#00ffcc;padding:20px;}
+h2{text-shadow:0 0 10px #00ffcc;}
+textarea{width:90%;background:black;color:#00ffcc;border:1px solid #00ffcc;padding:8px;}
+button{padding:8px 16px;background:#00ffcc;color:black;border:2px solid #00ffcc;cursor:pointer;}
+button:hover{background:black;color:#00ffcc;box-shadow:0 0 15px #00ffcc;}
+.box{background:rgba(0,0,0,0.6);padding:10px;margin:10px 0;border:2px solid #00ffcc;border-radius:10px;animation:glow 2s infinite alternate;}
+@keyframes glow{from{box-shadow:0 0 5px #00ffcc;}to{box-shadow:0 0 20px #00ffcc;}}
 </style>
 </head>
 <body>
-
 <h2>💬 Elev Chatwall</h2>
-<p>Kun for elever – fiktiv demo</p>
-
-<label>
-  <input type="checkbox" id="anon">
-  Post anonymt
-</label>
-<br><br>
-
-<textarea id="msg" rows="3" cols="40" placeholder="Skriv melding..."></textarea><br><br>
+<p>Kun medlemmer – demo</p>
+<label><input type="checkbox" id="anon"> Post anonymt</label><br><br>
+<textarea id="msg" rows="3"></textarea><br><br>
 <button onclick="post()">Send</button>
-
 <hr>
-
 <div id="chat"></div>
 
 <script>
-// enkel tilgangssjekk
-if(!localStorage.getItem("role")){
-  document.body.innerHTML = "ACCESS DENIED BY FIREWALL";
-}
-
-/* --- last meldinger --- */
+if(!localStorage.getItem("role")){document.body.innerHTML="ACCESS DENIED";}
 function load(){
-  const chat = document.getElementById("chat");
-  chat.innerHTML = "";
-  const msgs = JSON.parse(localStorage.getItem("chat") || "[]");
-  msgs.forEach(m=>{
-    chat.innerHTML += `
-      <div class="box">
-        <b>${m.name}</b>: ${m.text}<br>
-        <small>${m.time}</small>
-      </div>`;
+  const chat=document.getElementById("chat");chat.innerHTML="";
+  (JSON.parse(localStorage.getItem("chat")||"[]")).forEach(m=>{
+    chat.innerHTML+=`<div class="box"><b>${m.name}</b>: ${m.text}<br><small>${m.time}</small></div>`;
   });
 }
-
 function post(){
-  const text = document.getElementById("msg").value;
-  if(!text) return;
-
-  const anon = document.getElementById("anon").checked;
-  const name = anon ? "Anonym elev" : (localStorage.getItem("name") || "Elev");
-
-  let msgs = JSON.parse(localStorage.getItem("chat") || "[]");
-  msgs.push({
-    name,
-    text,
-    time: new Date().toLocaleString()
-  });
-
-  localStorage.setItem("chat", JSON.stringify(msgs));
-  document.getElementById("msg").value = "";
+  const text=document.getElementById("msg").value;if(!text)return;
+  const anon=document.getElementById("anon").checked;
+  const name=anon?"Anonym elev":localStorage.getItem("name")||"Elev";
+  let msgs=JSON.parse(localStorage.getItem("chat")||"[]");
+  msgs.push({name,text,time:new Date().toLocaleString()});
+  localStorage.setItem("chat",JSON.stringify(msgs));
+  document.getElementById("msg").value="";
   load();
 }
-
 load();
 </script>
-
 </body>
 </html>
+
