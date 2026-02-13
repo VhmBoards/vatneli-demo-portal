@@ -1,211 +1,131 @@
 <!DOCTYPE html>
 <html lang="no">
 <head>
-<meta charset="UTF-8">
-<title>Vatneli Chatwall</title>
+  <meta charset="UTF-8">
+  <title>Elev Chat</title>
 
-<style>
-body {
-  margin: 0;
-  padding: 20px;
-  font-family: "Courier New", monospace;
-  background: linear-gradient(135deg, #070707, #111);
-  color: #00ffcc;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+  <style>
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top, #0a0f1f, #000);
+      font-family: "Segoe UI", sans-serif;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
 
-h1 {
-  text-shadow: 0 0 10px #00ffcc;
-}
+    .chat-box {
+      width: 420px;
+      height: 600px;
+      background: rgba(20, 30, 60, 0.85);
+      border-radius: 18px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 40px #00f2ff44;
+      overflow: hidden;
+    }
 
-textarea {
-  width: 90%;
-  max-width: 600px;
-  height: 80px;
-  background: #000;
-  color: #00ffcc;
-  border: 2px solid #00ffcc;
-  padding: 10px;
-  resize: none;
-}
+    .header {
+      padding: 14px;
+      text-align: center;
+      font-weight: bold;
+      letter-spacing: 1px;
+      background: linear-gradient(90deg, #00f2ff, #6a5cff);
+      color: black;
+    }
 
-button {
-  margin-top: 10px;
-  padding: 10px 25px;
-  background: #00ffcc;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.25s;
-}
+    .messages {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
 
-button:hover {
-  background: black;
-  color: #00ffcc;
-  box-shadow: 0 0 20px #00ffcc;
-}
+    .msg {
+      background: rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+      font-size: 14px;
+      animation: slideIn 0.3s ease-out;
+    }
 
-#chat {
-  width: 90%;
-  max-width: 600px;
-  margin-top: 25px;
-}
+    .msg span {
+      color: #00f2ff;
+      font-weight: bold;
+    }
 
-.msg {
-  display: flex;
-  gap: 12px;
-  background: rgba(0,0,0,0.65);
-  border: 2px solid #00ffcc;
-  border-radius: 14px;
-  padding: 12px;
-  margin-bottom: 12px;
-  animation: glow 1.5s infinite alternate;
-}
+    .input-area {
+      display: flex;
+      padding: 10px;
+      gap: 6px;
+      background: #050814;
+    }
 
-.avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: 2px solid #00ffcc;
-  flex-shrink: 0;
-  object-fit: cover;
-}
+    input {
+      flex: 1;
+      padding: 8px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+    }
 
-@keyframes glow {
-  from { box-shadow: 0 0 6px #00ffcc; }
-  to   { box-shadow: 0 0 18px #00ffcc; }
-}
+    button {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background: #00f2ff;
+      font-weight: bold;
+    }
 
-small {
-  color: #aaa;
-}
-
-#points {
-  margin-top: 15px;
-}
-</style>
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-15px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-<h1>💬 Vatneli Chatwall</h1>
-<p>Kun medlemmer • Nyeste melding vises øverst</p>
+<div class="chat-box">
+  <div class="header">💬 Elev Chat</div>
 
-<label>
-  <input type="checkbox" id="anon">
-  Post anonymt
-</label><br><br>
+  <div class="messages" id="messages"></div>
 
-<textarea id="text" placeholder="Skriv melding..."></textarea><br>
-<button onclick="send()">Send</button>
-
-<div id="points"></div>
-<div id="chat"></div>
+  <div class="input-area">
+    <input id="name" placeholder="Navn">
+    <input id="text" placeholder="Melding">
+    <button onclick="send()">Send</button>
+  </div>
+</div>
 
 <script>
-// ================== SIKKERHET ==================
-if (!localStorage.getItem("role")) {
-  document.body.innerHTML = "<h2>ACCESS DENIED</h2>";
-}
+  const messagesDiv = document.getElementById("messages");
 
-// ================== AVATAR ==================
-function getAvatar() {
-  const img = localStorage.getItem("avatarImg");
-  if (img) {
-    return { type: "img", src: img };
+  function send() {
+    const name = document.getElementById("name").value || "Anonym";
+    const text = document.getElementById("text").value;
+    if (!text) return;
+
+    const msg = document.createElement("div");
+    msg.className = "msg";
+    msg.innerHTML = "<span>" + name + ":</span> " + text;
+
+    // 🔥 NYESTE MELDING ØVERST
+    messagesDiv.prepend(msg);
+
+    document.getElementById("text").value = "";
   }
-  return { type: "color", bg: "#222", border: "#00ffcc" };
-}
-
-// ================== SUSPICIOUS TIME ==================
-function suspiciousTime() {
-  const d = new Date();
-  const h = d.getHours();
-  const m = d.getMinutes();
-
-  const inTime =
-    (h === 9 && m >= 0) ||
-    (h > 9 && h < 14) ||
-    (h === 14 && m <= 30);
-
-  return inTime && localStorage.getItem("role") !== "admin";
-}
-
-// ================== POENG ==================
-function addPoints(n) {
-  let p = parseInt(localStorage.getItem("points") || "0");
-  p += n;
-  localStorage.setItem("points", p);
-  document.getElementById("points").innerText = "⭐ Poeng: " + p;
-}
-
-// ================== LAST CHAT ==================
-function loadChat() {
-  const chat = document.getElementById("chat");
-  chat.innerHTML = "";
-
-  const msgs = JSON.parse(localStorage.getItem("chat") || "[]");
-
-  // 🔥 NYESTE ØVERST
-  msgs.slice().reverse().forEach(m => {
-    const div = document.createElement("div");
-    div.className = "msg";
-
-    let avatarHTML = "";
-    if (m.avatar.type === "img") {
-      avatarHTML = `<img class="avatar" src="${m.avatar.src}">`;
-    } else {
-      avatarHTML = `<div class="avatar" style="background:${m.avatar.bg};"></div>`;
-    }
-
-    div.innerHTML = `
-      ${avatarHTML}
-      <div>
-        <b>${m.name}</b><br>
-        ${m.text}<br>
-        <small>${m.time}</small>
-      </div>
-    `;
-    chat.appendChild(div);
-  });
-}
-
-// ================== SEND MELDING ==================
-function send() {
-  if (suspiciousTime()) {
-    alert("⚠️ Begrenset tilgang mellom 09:00–14:30");
-    return;
-  }
-
-  const text = document.getElementById("text").value.trim();
-  if (!text) return;
-
-  const anon = document.getElementById("anon").checked;
-  const name = anon ? "Anonym elev" : (localStorage.getItem("name") || "Elev");
-
-  const msg = {
-    name,
-    text,
-    time: new Date().toLocaleString(),
-    avatar: getAvatar()
-  };
-
-  const msgs = JSON.parse(localStorage.getItem("chat") || "[]");
-  msgs.push(msg);
-  localStorage.setItem("chat", JSON.stringify(msgs));
-
-  document.getElementById("text").value = "";
-  addPoints(5);
-  loadChat();
-}
-
-// ================== INIT ==================
-document.getElementById("points").innerText =
-  "⭐ Poeng: " + (localStorage.getItem("points") || "0");
-
-loadChat();
 </script>
 
 </body>
