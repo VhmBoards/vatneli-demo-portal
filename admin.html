@@ -11,8 +11,7 @@ nav{display:flex;justify-content:center;gap:12px;margin:12px;}
 nav button{padding:10px 14px;border:none;border-radius:8px;background:#00f2ff;color:#000;font-weight:700;cursor:pointer;transition:0.2s;}
 nav button:hover{background:#0ff;}
 section{display:none;padding:12px;}
-section.active{display:block;}
-.panel{background:rgba(18,26,55,0.92);border-radius:14px;padding:12px;box-shadow:0 0 45px #00f2ff55;}
+section.panel{background:rgba(18,26,55,0.92);border-radius:14px;padding:12px;box-shadow:0 0 45px #00f2ff55;margin-bottom:12px;}
 .msg{display:flex;gap:8px;background:rgba(255,255,255,0.08);border-radius:12px;padding:8px;margin-bottom:8px;align-items:center;position:relative;}
 .avatar{width:32px;text-align:center;}
 .content span{color:#00f2ff;font-weight:600;}
@@ -28,7 +27,7 @@ button.send{background:#0ff;font-weight:700;color:#000;cursor:pointer;}
 <nav>
   <button onclick="openPanel('registration')">Elevregistrering</button>
   <button onclick="openPanel('survey')">Elevundersøkelse</button>
-  <button onclick="openPanel('chat')">Chat Wall</button>
+  <button onclick="toggleChat()">Åpne Chat Wall</button>
   <button onclick="openPanel('leaderboard')">Leaderboard</button>
 </nav>
 
@@ -45,13 +44,13 @@ button.send{background:#0ff;font-weight:700;color:#000;cursor:pointer;}
 </section>
 
 <!-- Chat wall -->
-<section id="chat" class="panel">
+<section id="chat" class="panel" style="display:none;">
   <h2>Chat Wall</h2>
   <div id="messages" style="max-height:400px;overflow-y:auto;"></div>
 </section>
 
 <!-- Leaderboard -->
-<section id="leaderboard" class="panel">
+<section id="leaderboard" class="panel" style="display:block;">
   <h2>Leaderboard</h2>
   <div id="leaderboard-list"></div>
 </section>
@@ -77,8 +76,16 @@ const storage = firebase.storage();
 
 // === Panels ===
 function openPanel(panel){
-  document.querySelectorAll('section.panel').forEach(sec=>sec.classList.remove('active'));
-  document.getElementById(panel).classList.add('active');
+  document.querySelectorAll('section.panel').forEach(sec=>{
+    if(sec.id!=='chat') sec.style.display='none'; // chat ikke auto-hide
+  });
+  if(panel!=='chat') document.getElementById(panel).style.display='block';
+}
+
+// Chat åpnes via knapp
+function toggleChat(){
+  const chatSec=document.getElementById('chat');
+  chatSec.style.display=(chatSec.style.display==='none')?'block':'block'; // ingen lukking, alltid block
 }
 
 // === Admin info ===
@@ -122,12 +129,6 @@ db.ref('surveys').on('value', snapshot=>{
 // === Chat ===
 const messagesDiv=document.getElementById("messages");
 let points={};
-
-function isSuspiciousTime(){ 
-  const now=new Date(); 
-  const m=now.getHours()*60+now.getMinutes(); 
-  return m>=540 && m<=870; // 09:00-14:30
-}
 
 db.ref('messages').on('value', snapshot=>{
   messagesDiv.innerHTML="";
