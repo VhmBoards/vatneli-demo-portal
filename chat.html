@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Elev Chat med Avatar</title>
+<title>Elev Chat </title>
 <style>
 *{box-sizing:border-box;}
 body{margin:0;height:100vh;background:radial-gradient(circle at top,#0a102a,#000);font-family:"Segoe UI",sans-serif;color:#fff;display:flex;justify-content:center;align-items:center;}
@@ -50,11 +50,9 @@ body{margin:0;height:100vh;background:radial-gradient(circle at top,#0a102a,#000
 </div>
 
 <script>
-// Admin og demo
 const ADMIN_NAME="Markuss";
 const ADMIN_CODE="664242";
 
-// Meldinger & poeng
 let storedMessages=[];
 let points={};
 let customAvatar=null;
@@ -64,17 +62,14 @@ const statusDiv=document.getElementById("status");
 
 const emojiMap={":fire:":"🔥",":smile:":"😄",":sad:":"😢",":heart:":"❤️",":cool:":"😎",":angry:":"😡"};
 
-// Emoji parsing
 function parseEmojis(text){ for(const k in emojiMap) text=text.replaceAll(k,emojiMap[k]); return text; }
 
-// Suspicious time
 function isSuspiciousTime(){
   const now=new Date();
   const m=now.getHours()*60+now.getMinutes();
   return m>=540 && m<=870;
 }
 
-// Status update
 function updateStatus(){
   if(isSuspiciousTime()){
     statusDiv.textContent="⚠️ Suspicious time – meldinger skjult";
@@ -84,10 +79,8 @@ function updateStatus(){
 setInterval(updateStatus,30000);
 updateStatus();
 
-// Admin check
 function isAdmin(name,code){return name===ADMIN_NAME && code===ADMIN_CODE;}
 
-// Avatar upload
 document.getElementById("imgAvatar").addEventListener("change",function(e){
   const file=e.target.files[0];
   if(file){
@@ -97,7 +90,6 @@ document.getElementById("imgAvatar").addEventListener("change",function(e){
   }
 });
 
-// Send melding
 function send(){
   const name=document.getElementById("name").value||"Anonym";
   const code=document.getElementById("code").value;
@@ -105,13 +97,12 @@ function send(){
   if(!text) return;
   text=parseEmojis(text);
 
-  // Velg avatar: bilde > emoji > default
   let avatar=customAvatar||document.getElementById("emojiAvatar").value||"👤";
 
   points[name]=(points[name]||0)+1;
   if(isAdmin(name,code)) points[name]+=2;
 
-  storedMessages.push({name,avatar,text,pts:points[name],admin:isAdmin(name,code)});
+  storedMessages.push({name,avatar,text,pts:points[name],admin:isAdmin(name,code),timestamp:Date.now()});
 
   document.getElementById("text").value="";
   customAvatar=null;
@@ -120,10 +111,9 @@ function send(){
   if(!isSuspiciousTime()||isAdmin(name,code)) renderMessages();
 }
 
-// Render meldinger
 function renderMessages(){
   messagesDiv.innerHTML="";
-  [...storedMessages].reverse().forEach((m,i)=>{
+  [...storedMessages].sort((a,b)=>b.timestamp-a.timestamp).forEach((m,i)=>{
     if(isSuspiciousTime()&&!m.admin) return;
     const msg=document.createElement("div");
     msg.className="msg";
@@ -133,7 +123,7 @@ function renderMessages(){
       const del=document.createElement("div");
       del.className="delete";
       del.textContent="✖";
-      del.onclick=()=>{storedMessages.splice(storedMessages.length-1-i,1);renderMessages();};
+      del.onclick=()=>{storedMessages.splice(storedMessages.indexOf(m),1); renderMessages(); };
       msg.appendChild(del);
     }
     messagesDiv.appendChild(msg);
@@ -143,3 +133,4 @@ function renderMessages(){
 
 </body>
 </html>
+
