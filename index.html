@@ -2,77 +2,244 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Vatneli School – Firewall</title>
+<title>VHM Full System</title>
 <style>
-body {
-  background:#0b0b0b;
-  color:#00ff88;
-  font-family:monospace;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-}
-.box {
-  border:2px solid #00ff88;
-  padding:20px;
-  width:320px;
-  text-align:center;
-}
-input {
-  width:90%;
-  margin:6px 0;
-  padding:6px;
-  background:black;
-  color:#00ff88;
-  border:1px solid #00ff88;
-}
-button {
-  padding:6px 12px;
-  background:#00ff88;
-  color:black;
-  border:none;
-  cursor:pointer;
-}
-.msg { margin-top:10px; color:red; }
-.small { font-size:12px; color:#aaa; }
+*{box-sizing:border-box;}
+body{margin:0;font-family:"Segoe UI",sans-serif;background:radial-gradient(circle at top,#0a102a,#000);color:#fff;display:flex;justify-content:center;padding:20px;}
+.container{width:500px;}
+h2{text-align:center;background:linear-gradient(90deg,#00f2ff,#7b6cff);-webkit-background-clip:text;color:transparent;font-size:28px;margin-bottom:14px;}
+.panel{background:rgba(18,26,55,0.92);border-radius:14px;padding:12px;box-shadow:0 0 45px #00f2ff55;margin-bottom:20px;}
+input, select, button, textarea{width:100%;margin:6px 0;padding:10px;border-radius:8px;border:none;outline:none;}
+button{cursor:pointer;font-weight:700;}
+.chat{max-height:300px;overflow-y:auto;margin-top:10px;}
+.msg{display:flex;gap:8px;background:rgba(255,255,255,0.08);border-radius:12px;padding:8px;margin-bottom:8px;align-items:center;}
+.avatar{width:32px;text-align:center;}
+.content span{color:#00f2ff;font-weight:600;}
+.points{font-size:11px;color:#aaa;margin-left:auto;}
+.delete{position:absolute;top:6px;right:8px;cursor:pointer;color:#ff4d4d;font-weight:bold;}
 </style>
 </head>
 <body>
 
-<div class="box">
-<h3>🔥 VATNELI FIREWALL 🔥</h3>
-<p>Kun elever har tilgang</p>
+<div class="container">
 
-<input id="name" placeholder="Navn">
-<input id="code" type="password" placeholder="Tilgangskode">
-<button onclick="login()">Authorize</button>
-
-<div class="msg" id="msg"></div>
-<p class="small">Fiktiv demo – skoleprosjekt</p>
+<!-- ADMIN PANEL -->
+<h2>Admin Panel</h2>
+<div class="panel">
+  <button onclick="openPanel('registration')">Elevregistrering</button>
+  <button onclick="openPanel('survey')">Elevundersøkelse</button>
+  <button onclick="toggleChat()">Åpne Chat Wall</button>
+  <button onclick="openPanel('leaderboard')">Leaderboard</button>
 </div>
 
+<section id="registration" class="panel" style="display:none;">
+  <h3>Ny elevregistrering</h3>
+  <div id="new-requests"></div>
+</section>
+
+<section id="survey" class="panel" style="display:none;">
+  <h3>Elevundersøkelse</h3>
+  <div id="survey-responses"></div>
+</section>
+
+<section id="chat" class="panel" style="display:none;">
+  <h3>Chat Wall</h3>
+  <div id="messages"></div>
+</section>
+
+<section id="leaderboard" class="panel" style="display:block;">
+  <h3>Leaderboard</h3>
+  <div id="leaderboard-list"></div>
+</section>
+
+<hr>
+
+<!-- ELEV SIDE -->
+<h2>Elevregistrering</h2>
+<div class="panel">
+  <input id="reg-name" placeholder="Navn">
+  <input id="reg-phone" placeholder="Telefon">
+  <input id="reg-code" placeholder="Kode">
+  <input id="reg-birth" placeholder="Fødselsår">
+  <button onclick="registerUser()">Send registrering</button>
+</div>
+
+<h2>Lag din avatar</h2>
+<div class="panel">
+  <input type="file" id="avatarFile" accept="image/*">
+  <button onclick="uploadAvatar()">Last opp avatar</button>
+  <div id="avatarPreview" style="margin-top:10px;"></div>
+</div>
+
+<h2>Chat</h2>
+<div class="panel">
+  <select id="emojiAvatar">
+    <option value="👤">Standard</option>
+    <option value="🧑‍💻">🧑‍💻</option>
+    <option value="🧠">🧠</option>
+    <option value="👑">👑</option>
+  </select>
+  <textarea id="msg-text" placeholder="Skriv melding..."></textarea>
+  <button onclick="sendMessage()">Send</button>
+  <div class="chat" id="user-messages"></div>
+</div>
+
+<h2>Leaderboard</h2>
+<div class="panel" id="user-leaderboard"></div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+
 <script>
-function login(){
-  const name = document.getElementById("name").value;
-  const code = document.getElementById("code").value;
+// Firebase Init
+const firebaseConfig = {
+  apiKey: "DIN_API_KEY",
+  authDomain: "DITT_PROJECT_ID.firebaseapp.com",
+  databaseURL: "https://DITT_PROJECT_ID-default-rtdb.firebaseio.com",
+  projectId: "DITT_PROJECT_ID",
+  storageBucket: "DITT_PROJECT_ID.appspot.com",
+  messagingSenderId: "DIN_SENDER_ID",
+  appId: "DIN_APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const storage = firebase.storage();
 
-  if(name === "Markuss" && code === "664242"){
-    localStorage.setItem("role","admin");
-    location.href="admin.html";
-    return;
-  }
-
-  if(code === "101110"){
-    localStorage.setItem("role","student");
-    localStorage.setItem("name",name);
-    location.href="member.html";
-  } else {
-    document.getElementById("msg").innerText =
-      "ACCESS DENIED BY FIREWALL";
-  }
+// === Admin Panels ===
+function openPanel(panel){
+  document.querySelectorAll('section').forEach(s=>{if(s.id!=='chat') s.style.display='none';});
+  if(panel!=='chat') document.getElementById(panel).style.display='block';
 }
+function toggleChat(){ document.getElementById('chat').style.display='block'; }
+
+// === Admin: Elevregistrering ===
+const newRequestsDiv=document.getElementById("new-requests");
+db.ref('pendingUsers').on('value', snapshot=>{
+  newRequestsDiv.innerHTML="";
+  snapshot.forEach(snap=>{
+    const u=snap.val(); const key=snap.key;
+    const div=document.createElement('div');
+    div.innerHTML=`<p>${u.name}, ${u.phone}, Kode:${u.code}, Fødselsår:${u.birthYear}</p>
+      <button id="accept-${key}">Accept</button>
+      <button id="decline-${key}">Decline</button>`;
+    newRequestsDiv.appendChild(div);
+
+    document.getElementById(`accept-${key}`).onclick=()=>{
+      if(u.birthYear>=2010){alert("Elev for ung!"); return;}
+      db.ref('users/'+u.name).set({...u,accepted:true,points:0});
+      db.ref('pendingUsers/'+key).remove();
+    };
+    document.getElementById(`decline-${key}`).onclick=()=>{db.ref('pendingUsers/'+key).remove();}
+  });
+});
+
+// === Admin: Elevundersøkelse ===
+const surveyDiv=document.getElementById("survey-responses");
+db.ref('surveys').on('value', snapshot=>{
+  surveyDiv.innerHTML="";
+  snapshot.forEach(snap=>{
+    const s=snap.val(); const div=document.createElement('div');
+    div.textContent=`${s.name}: ${s.answer}`;
+    surveyDiv.appendChild(div);
+  });
+});
+
+// === Admin: Chat Wall ===
+const messagesDiv=document.getElementById("messages");
+db.ref('messages').on('value', snapshot=>{
+  messagesDiv.innerHTML="";
+  const arr=[];
+  snapshot.forEach(snap=>arr.push({...snap.val(),key:snap.key}));
+  arr.sort((a,b)=>b.timestamp-a.timestamp);
+  arr.forEach(m=>{
+    const div=document.createElement('div'); div.className='msg';
+    const avatar = m.avatar?'<img src="'+m.avatar+'" style="width:32px;border-radius:50%;">':m.avatar||"👤";
+    div.innerHTML=`<div class="avatar">${avatar}</div><div class="content"><span>${m.name}:</span> ${m.text}<div class="points">⭐ ${m.pts||0}</div></div>`;
+    const del=document.createElement('div'); del.className='delete'; del.textContent='✖';
+    del.onclick=()=>{ db.ref('messages').child(m.key).remove(); }
+    div.appendChild(del);
+    messagesDiv.appendChild(div);
+  });
+});
+
+// === Admin & Elev: Leaderboard ===
+function updateLeaderboard(divId){
+  const leaderboardDiv=document.getElementById(divId);
+  db.ref('users').on('value', snapshot=>{
+    leaderboardDiv.innerHTML="";
+    const arr=[];
+    snapshot.forEach(snap=>arr.push({name:snap.val().name, pts:snap.val().points||0}));
+    arr.sort((a,b)=>b.pts-a.pts);
+    arr.forEach(u=>{
+      const d=document.createElement('div'); d.textContent=`${u.name} - ⭐ ${u.pts}`;
+      leaderboardDiv.appendChild(d);
+    });
+  });
+}
+updateLeaderboard('leaderboard-list');
+updateLeaderboard('user-leaderboard');
+
+// === Elev: Registrering ===
+function registerUser(){
+  const name=document.getElementById('reg-name').value.trim();
+  const phone=document.getElementById('reg-phone').value.trim();
+  const code=document.getElementById('reg-code').value.trim();
+  const birth=parseInt(document.getElementById('reg-birth').value);
+  if(!name||!phone||!code||!birth){alert("Fyll ut alle felt"); return;}
+  if(birth>=2010){alert("For ung!"); return;}
+  db.ref('pendingUsers').push({name,phone,code,birthYear:birth});
+  alert("Registrering sendt til admin!");
+}
+
+// === Elev: Avatar ===
+function uploadAvatar(){
+  const file=document.getElementById('avatarFile').files[0];
+  const name=document.getElementById('reg-name').value.trim();
+  if(!file||!name){alert("Velg fil og registrer navn"); return;}
+  const ref=storage.ref('avatars/'+name+'_'+Date.now());
+  const task=ref.put(file);
+  task.on('state_changed',null,error=>alert(error),()=>{
+    task.snapshot.ref.getDownloadURL().then(url=>{
+      db.ref('users/'+name).update({avatar:url});
+      document.getElementById('avatarPreview').innerHTML=`<img src="${url}" style="width:80px;border-radius:50%;">`;
+      alert("Avatar lagret!");
+    });
+  });
+}
+
+// === Elev: Chat ===
+const userMessages=document.getElementById('user-messages');
+function isSuspiciousTime(){ const now=new Date(); const m=now.getHours()*60+now.getMinutes(); return m>=540 && m<=870; }
+
+function sendMessage(){
+  const name=document.getElementById('reg-name').value.trim();
+  const code=document.getElementById('reg-code').value.trim();
+  const text=document.getElementById('msg-text').value.trim();
+  const avatar=document.getElementById('emojiAvatar').value;
+  if(!name||!code||!text){alert("Fyll ut navn, kode og melding"); return;}
+  if(isSuspiciousTime()){ alert("Meldinger skjules i skolens tid"); return;}
+  db.ref('messages').push({name,text,avatar,pts:1,timestamp:Date.now()});
+  document.getElementById('msg-text').value='';
+}
+
+db.ref('messages').on('value', snapshot=>{
+  userMessages.innerHTML="";
+  const arr=[];
+  snapshot.forEach(snap=>arr.push({...snap.val(),key:snap.key}));
+  arr.sort((a,b)=>b.timestamp-a.timestamp);
+  arr.forEach(m=>{
+    if(isSuspiciousTime()) return;
+    const div=document.createElement('div'); div.className='msg';
+    const avatar=m.avatar?m.avatar:"👤";
+    div.innerHTML=`<div class="avatar">${avatar.startsWith('http')?'<img src="'+avatar+'" style="width:32px;border-radius:50%;">':avatar}</div>
+      <div class="content"><span>${m.name}:</span> ${m.text}<div class="points">⭐ ${m.pts}</div></div>`;
+    userMessages.appendChild(div);
+  });
+});
 </script>
 
 </body>
 </html>
+
