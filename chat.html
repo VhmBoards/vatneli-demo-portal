@@ -2,153 +2,57 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Elev Chat</title>
+<title>Elev Chat med Avatar</title>
 
 <style>
-* { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  height: 100vh;
-  background: radial-gradient(circle at top, #0a102a, #000);
-  font-family: "Segoe UI", system-ui, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #fff;
-}
-
-.chat {
-  width: 440px;
-  height: 640px;
-  background: rgba(18,26,55,0.9);
-  border-radius: 18px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 0 45px #00f2ff55;
-  overflow: hidden;
-}
-
-.header {
-  padding: 14px;
-  text-align: center;
-  font-weight: 700;
-  background: linear-gradient(90deg,#00f2ff,#7b6cff);
-  color: #000;
-}
-
-.status {
-  text-align: center;
-  font-size: 12px;
-  padding: 4px;
-  background: #050814;
-}
-
-.messages {
-  flex: 1;
-  padding: 12px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.msg {
-  display: flex;
-  gap: 8px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 12px;
-  padding: 8px;
-  margin-bottom: 8px;
-  font-size: 14px;
-  animation: slideIn 0.25s ease-out;
-  position: relative;
-}
-
-.avatar {
-  font-size: 24px;
-}
-
-.content span {
-  color: #00f2ff;
-  font-weight: 600;
-}
-
-.points {
-  font-size: 11px;
-  color: #aaa;
-}
-
-.delete {
-  position: absolute;
-  top: 6px;
-  right: 8px;
-  cursor: pointer;
-  color: #ff4d4d;
-  font-weight: bold;
-}
-
-.input {
-  display: flex;
-  gap: 6px;
-  padding: 10px;
-  background: #050814;
-}
-
-.input input {
-  flex: 1;
-  padding: 8px;
-  border-radius: 8px;
-  border: none;
-  outline: none;
-}
-
-.input button {
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  background: #00f2ff;
-  font-weight: 700;
-}
-
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(-14px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+*{box-sizing:border-box;}
+body{margin:0;height:100vh;background:radial-gradient(circle at top,#0a102a,#000);font-family:"Segoe UI",sans-serif;display:flex;justify-content:center;align-items:center;color:#fff;}
+.chat{width:460px;height:680px;background:rgba(18,26,55,0.92);border-radius:18px;display:flex;flex-direction:column;box-shadow:0 0 45px #00f2ff55;overflow:hidden;}
+.header{padding:14px;text-align:center;font-weight:700;background:linear-gradient(90deg,#00f2ff,#7b6cff);color:#000;}
+.status{text-align:center;font-size:12px;padding:4px;background:#050814;}
+.messages{flex:1;padding:12px;overflow-y:auto;display:flex;flex-direction:column;}
+.msg{display:flex;gap:8px;background:rgba(255,255,255,0.08);border-radius:12px;padding:8px;margin-bottom:8px;font-size:14px;animation:slideIn 0.25s ease-out;position:relative;align-items:center;}
+.avatar{font-size:28px;width:32px;text-align:center;}
+.content span{color:#00f2ff;font-weight:600;}
+.points{font-size:11px;color:#aaa;}
+.delete{position:absolute;top:6px;right:8px;cursor:pointer;color:#ff4d4d;font-weight:bold;}
+.input{display:flex;gap:6px;padding:10px;background:#050814;flex-wrap:wrap;}
+.input input, .input select{flex:1;padding:8px;border-radius:8px;border:none;outline:none;}
+.input button{padding:8px 14px;border-radius:8px;border:none;cursor:pointer;background:#00f2ff;font-weight:700;}
+@keyframes slideIn{from{opacity:0;transform:translateY(-14px);}to{opacity:1;transform:translateY(0);}}
 </style>
 </head>
-
 <body>
 
 <div class="chat">
   <div class="header">💬 Elev Chat</div>
   <div class="status" id="status"></div>
-
   <div class="messages" id="messages"></div>
 
   <div class="input">
     <input id="name" placeholder="Navn">
     <input id="code" placeholder="Kode">
+    <select id="emojiAvatar">
+      <option value="">Velg emoji-avatar</option>
+      <option value="🧑‍💻">🧑‍💻 Nicholas</option>
+      <option value="🧠">🧠 Eliam</option>
+      <option value="👑">👑 Markuss</option>
+      <option value="✨">✨ Sofia</option>
+      <option value="🌸">🌸 Alexandra</option>
+      <option value="🌊">🌊 Kaia</option>
+      <option value="⚡">⚡ Tobias</option>
+      <option value="🚀">🚀 Oliver</option>
+      <option value="🔥">🔥 cristi</option>
+    </select>
+    <input type="file" id="imgAvatar" accept="image/*">
     <input id="text" placeholder="Skriv melding…">
     <button onclick="send()">Send</button>
   </div>
 </div>
 
 <script>
-/* ====== KONFIG ====== */
 const ADMIN_NAME = "Markuss";
 const ADMIN_CODE = "664242";
-
-const avatarMap = {
-  Nicholas:"🧑‍💻", Eliam:"🧠", Markuss:"👑", Sofia:"✨",
-  Alexandra:"🌸", Kaia:"🌊", Tobias:"⚡", Oliver:"🚀",
-  cristi:"🔥"
-};
-
-const emojiMap = {
-  ":fire:":"🔥", ":smile:":"😄", ":sad:":"😢",
-  ":heart:":"❤️", ":cool:":"😎", ":angry:":"😡"
-};
 
 let storedMessages = [];
 let points = {};
@@ -156,98 +60,86 @@ let points = {};
 const messagesDiv = document.getElementById("messages");
 const statusDiv = document.getElementById("status");
 
-/* ====== TID ====== */
-function isSuspiciousTime() {
-  const now = new Date();
-  const h = now.getHours();
-  const m = now.getMinutes();
-  const minutes = h * 60 + m;
-  return minutes >= 540 && minutes <= 870; // 09:00–14:30
-}
+// Avatars
+let customAvatar = null;
+const emojiMap = {":fire:":"🔥",":smile:":"😄",":sad:":"😢",":heart:":"❤️",":cool:":"😎",":angry:":"😡"};
 
-/* ====== STATUS ====== */
-function updateStatus() {
-  if (isSuspiciousTime()) {
-    statusDiv.textContent = "⚠️ Suspicious time – meldinger skjult";
-    messagesDiv.innerHTML = "";
-  } else {
-    statusDiv.textContent = "🟢 Chat åpen";
-    renderMessages();
-  }
-}
-setInterval(updateStatus, 30000);
-updateStatus();
-
-/* ====== EMOJI ====== */
-function parseEmojis(text) {
-  for (const k in emojiMap) {
-    text = text.replaceAll(k, emojiMap[k]);
-  }
+function parseEmojis(text){
+  for(const k in emojiMap){text=text.replaceAll(k,emojiMap[k]);}
   return text;
 }
 
-/* ====== ADMIN ====== */
-function isAdmin(name, code) {
-  return name === ADMIN_NAME && code === ADMIN_CODE;
+// Suspicious time 09:00–14:30
+function isSuspiciousTime(){
+  const d=new Date();
+  const m=d.getHours()*60+d.getMinutes();
+  return m>=540 && m<=870;
 }
 
-/* ====== SEND ====== */
-function send() {
-  const name = document.getElementById("name").value || "Anonym";
-  const code = document.getElementById("code").value;
-  let text = document.getElementById("text").value.trim();
-  if (!text) return;
-
-  text = parseEmojis(text);
-
-  points[name] = (points[name] || 0) + 1;
-  if (isAdmin(name, code)) points[name] += 2;
-
-  storedMessages.push({
-    name,
-    avatar: avatarMap[name] || "👤",
-    text,
-    pts: points[name],
-    admin: isAdmin(name, code)
-  });
-
-  document.getElementById("text").value = "";
-
-  if (!isSuspiciousTime() || isAdmin(name, code)) {
+function updateStatus(){
+  if(isSuspiciousTime()){
+    statusDiv.textContent="⚠️ Suspicious time – meldinger skjult";
+    messagesDiv.innerHTML="";
+  }else{
+    statusDiv.textContent="🟢 Chat åpen";
     renderMessages();
   }
 }
+setInterval(updateStatus,30000);
+updateStatus();
 
-/* ====== RENDER ====== */
-function renderMessages() {
-  messagesDiv.innerHTML = "";
-  [...storedMessages].reverse().forEach((m, i) => {
-    const msg = document.createElement("div");
-    msg.className = "msg";
+function isAdmin(name,code){return name===ADMIN_NAME && code===ADMIN_CODE;}
 
-    msg.innerHTML = `
-      <div class="avatar">${m.avatar}</div>
-      <div class="content">
-        <span>${m.name}:</span> ${m.text}
-        <div class="points">⭐ ${m.pts} poeng</div>
-      </div>
-    `;
+document.getElementById("imgAvatar").addEventListener("change",function(e){
+  const file=e.target.files[0];
+  if(file){
+    const reader=new FileReader();
+    reader.onload=function(evt){ customAvatar=evt.target.result; }
+    reader.readAsDataURL(file);
+  }
+});
 
-    if (m.admin) {
-      const del = document.createElement("div");
-      del.className = "delete";
-      del.textContent = "✖";
-      del.onclick = () => {
-        storedMessages.splice(storedMessages.length - 1 - i, 1);
-        renderMessages();
-      };
+function send(){
+  const name=document.getElementById("name").value||"Anonym";
+  const code=document.getElementById("code").value;
+  let text=document.getElementById("text").value.trim();
+  if(!text) return;
+  text=parseEmojis(text);
+
+  // Avatar velges: custom bilde > emoji > default
+  let avatar=customAvatar||document.getElementById("emojiAvatar").value||"👤";
+
+  points[name]=(points[name]||0)+1;
+  if(isAdmin(name,code)) points[name]+=2;
+
+  storedMessages.push({name,avatar,text,pts:points[name],admin:isAdmin(name,code)});
+
+  document.getElementById("text").value="";
+  customAvatar=null;
+  document.getElementById("imgAvatar").value="";
+  renderMessages();
+}
+
+function renderMessages(){
+  if(isSuspiciousTime() && !storedMessages.some(m=>m.admin)){
+    messagesDiv.innerHTML=""; return;
+  }
+  messagesDiv.innerHTML="";
+  [...storedMessages].reverse().forEach((m,i)=>{
+    const msg=document.createElement("div");
+    msg.className="msg";
+    msg.innerHTML=`<div class="avatar">${typeof m.avatar==="string"?m.avatar:`<img src="${m.avatar}" style="width:28px;height:28px;border-radius:50%">`}</div>
+                     <div class="content"><span>${m.name}:</span> ${m.text}<div class="points">⭐ ${m.pts} poeng</div></div>`;
+    if(m.admin){
+      const del=document.createElement("div");
+      del.className="delete";
+      del.textContent="✖";
+      del.onclick=()=>{storedMessages.splice(storedMessages.length-1-i,1);renderMessages();};
       msg.appendChild(del);
     }
-
     messagesDiv.appendChild(msg);
   });
 }
 </script>
-
 </body>
 </html>
