@@ -2,35 +2,107 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Elevregistrering</title>
+<title>VHM Elevregistrering</title>
+<style>
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top, #0a102a, #000);
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  padding-top: 50px;
+}
+.container {
+  width: 400px;
+  background: rgba(18,26,55,0.95);
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 0 40px #00f2ff55;
+}
+h2 {
+  text-align: center;
+  font-size: 28px;
+  background: linear-gradient(90deg, #00f2ff, #7b6cff);
+  -webkit-background-clip: text;
+  color: transparent;
+  margin-bottom: 20px;
+}
+input, button {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+}
+input {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+input::placeholder { color: #aaa; }
+button {
+  background: #00f2ff;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+button:hover { background: #0ff; }
+#msg {
+  margin-top: 15px;
+  text-align: center;
+  font-weight: 600;
+}
+</style>
 </head>
 <body>
+<div class="container">
 <h2>Elevregistrering</h2>
 
-<input id="name" placeholder="Navn"><br><br>
-<input id="year" type="number" placeholder="Fødselsår"><br><br>
+<input id="name" placeholder="Navn">
+<input id="phone" placeholder="Telefon">
+<input id="code" placeholder="Kode (hemmelig)">
+<input id="year" type="number" placeholder="Fødselsår">
+
 <button onclick="signup()">Send søknad</button>
 
 <p id="msg"></p>
+</div>
 
 <script>
 function signup(){
   const year = Number(document.getElementById("year").value);
-  const name = document.getElementById("name").value;
+  const name = document.getElementById("name").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const code = document.getElementById("code").value.trim();
+  const msgEl = document.getElementById("msg");
 
-  if(year <= 2010){
-    document.getElementById("msg").innerText =
-      "Adgang nektet av brannmur (alderskrav)";
+  if(!name || !phone || !code || !year){
+    msgEl.innerText = "Fyll ut alle felt!";
     return;
   }
 
-  let pending = JSON.parse(localStorage.getItem("pending") || "[]");
-  pending.push({name,year});
-  localStorage.setItem("pending",JSON.stringify(pending));
+  if(year <= 2010){
+    msgEl.innerText = "Adgang nektet av brannmur (alderskrav)";
+    return;
+  }
 
-  document.getElementById("msg").innerText =
-    "Søknad sendt. Venter på godkjenning.";
+  // Lagre pending søknader i localStorage (kan byttes til Firebase)
+  let pending = JSON.parse(localStorage.getItem("pending") || "[]");
+  pending.push({name, phone, code, year});
+  localStorage.setItem("pending", JSON.stringify(pending));
+
+  msgEl.innerText = "Søknad sendt. Venter på godkjenning.";
+
+  // Clear input fields
+  document.getElementById("name").value = "";
+  document.getElementById("phone").value = "";
+  document.getElementById("code").value = "";
+  document.getElementById("year").value = "";
 }
 </script>
 </body>
 </html>
+
