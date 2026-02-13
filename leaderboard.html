@@ -3,146 +3,61 @@
 <head>
 <meta charset="UTF-8">
 <title>Leaderboard</title>
-
 <style>
-* { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  height: 100vh;
-  background: radial-gradient(circle at top, #0a102a, #000);
-  font-family: "Segoe UI", system-ui, sans-serif;
-  color: #fff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.board {
-  width: 420px;
-  background: rgba(18,26,55,0.92);
-  border-radius: 18px;
-  box-shadow: 0 0 45px #00f2ff55;
-  overflow: hidden;
-}
-
-.header {
-  padding: 16px;
-  text-align: center;
-  font-weight: 800;
-  letter-spacing: 1px;
-  background: linear-gradient(90deg,#00f2ff,#7b6cff);
-  color: #000;
-}
-
-.list {
-  padding: 14px;
-}
-
-.row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 12px;
-  padding: 10px;
-  margin-bottom: 10px;
-  animation: fadeIn 0.3s ease-out;
-}
-
-.rank {
-  font-weight: 800;
-  width: 24px;
-  text-align: center;
-}
-
-.avatar {
-  font-size: 22px;
-}
-
-.name {
-  flex: 1;
-  font-weight: 600;
-}
-
-.points {
-  font-size: 13px;
-  color: #00f2ff;
-  font-weight: 700;
-}
-
-.footer {
-  text-align: center;
-  font-size: 12px;
-  padding: 8px;
-  background: #050814;
-  color: #aaa;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+*{box-sizing:border-box;}
+body{margin:0;height:100vh;background:radial-gradient(circle at top,#0a102a,#000);font-family:"Segoe UI",sans-serif;color:#fff;display:flex;justify-content:center;align-items:center;}
+.board{width:460px;background:rgba(18,26,55,0.92);border-radius:18px;box-shadow:0 0 45px #00f2ff55;overflow:hidden;display:flex;flex-direction:column;}
+.header{padding:16px;text-align:center;font-weight:800;background:linear-gradient(90deg,#00f2ff,#7b6cff);color:#000;}
+.list{padding:14px;flex:1;overflow-y:auto;}
+.row{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border-radius:12px;padding:10px;margin-bottom:10px;animation:fadeIn 0.3s ease-out;}
+.rank{font-weight:800;width:24px;text-align:center;}
+.avatar{font-size:28px;width:36px;text-align:center;}
+.name{flex:1;font-weight:600;}
+.points{font-size:13px;color:#00f2ff;font-weight:700;}
+.footer{text-align:center;font-size:12px;padding:8px;background:#050814;color:#aaa;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 </style>
 </head>
-
 <body>
 
 <div class="board">
   <div class="header">🏆 Leaderboard</div>
-
   <div class="list" id="list"></div>
-
-  <div class="footer">
-    Kun elever • Markuss har full oversikt
-  </div>
+  <div class="footer">Tilgjengelig for medlemmer og admin</div>
 </div>
 
 <script>
-/*
-  Denne siden leser poeng fra localStorage.
-  Når vi kobler chat → lagring, blir dette live.
-*/
-
-// Midlertidig demo-data hvis tomt
-const demoData = {
-  Markuss: 42,
-  Nicholas: 18,
-  Sofia: 16,
-  Tobias: 14,
-  Kaia: 11,
-  Oliver: 9
+// Demo poeng (senere koblet til chat eller Firebase)
+const points = {
+  Nicholas:18,
+  Eliam:12,
+  Markuss:42,
+  Sofia:16,
+  Alexandra:8,
+  Kaia:11,
+  Tobias:14,
+  Oliver:9,
+  cristi:7
 };
 
-const avatars = {
+// Avatars
+const avatars={
   Nicholas:"🧑‍💻", Eliam:"🧠", Markuss:"👑", Sofia:"✨",
   Alexandra:"🌸", Kaia:"🌊", Tobias:"⚡", Oliver:"🚀",
   cristi:"🔥"
 };
 
-// Prøv å hente ekte data
-let points = JSON.parse(localStorage.getItem("points"));
-
-// Hvis ingen data enda → bruk demo
-if (!points) points = demoData;
-
 // Sorter høyest poeng først
-const sorted = Object.entries(points)
-  .sort((a,b) => b[1] - a[1]);
+const sorted=Object.entries(points).sort((a,b)=>b[1]-a[1]);
 
-const list = document.getElementById("list");
-
-sorted.forEach((p, i) => {
-  const row = document.createElement("div");
-  row.className = "row";
-
-  row.innerHTML = `
-    <div class="rank">${i+1}</div>
-    <div class="avatar">${avatars[p[0]] || "👤"}</div>
-    <div class="name">${p[0]}</div>
-    <div class="points">⭐ ${p[1]}</div>
-  `;
-
+const list=document.getElementById("list");
+sorted.forEach((p,i)=>{
+  const row=document.createElement("div");
+  row.className="row";
+  row.innerHTML=`<div class="rank">${i+1}</div>
+                 <div class="avatar">${avatars[p[0]]||"👤"}</div>
+                 <div class="name">${p[0]}</div>
+                 <div class="points">⭐ ${p[1]}</div>`;
   list.appendChild(row);
 });
 </script>
