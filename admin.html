@@ -2,98 +2,171 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Admin Dashboard</title>
+<title>VHM Admin Dashboard</title>
 <style>
 *{box-sizing:border-box;}
-body{margin:0;height:100vh;background:radial-gradient(circle at top,#0a102a,#000);font-family:"Segoe UI",sans-serif;color:#fff;display:flex;justify-content:center;align-items:center;}
-.dashboard{width:800px;height:90vh;background:rgba(18,26,55,0.95);border-radius:18px;display:flex;flex-direction:column;box-shadow:0 0 55px #00f2ff55;overflow:hidden;}
-.header{padding:16px;text-align:center;font-weight:800;background:linear-gradient(90deg,#00f2ff,#7b6cff);color:#000;}
-.sections{display:flex;flex:1;}
-.messages-section, .points-section{flex:1;padding:14px;overflow-y:auto;}
-.messages-section{border-right:1px solid rgba(255,255,255,0.2);}
-.msg{display:flex;gap:10px;background:rgba(255,255,255,0.08);border-radius:12px;padding:8px;margin-bottom:8px;align-items:center;position:relative;}
-.avatar{font-size:28px;width:36px;text-align:center;}
+body{margin:0;font-family:"Segoe UI",sans-serif;background:radial-gradient(circle at top,#0a102a,#000);color:#fff;}
+header{padding:20px;text-align:center;font-size:28px;font-weight:bold;background:linear-gradient(90deg,#00f2ff,#7b6cff);color:#000;text-shadow:0 0 10px #0ff;}
+nav{display:flex;justify-content:center;gap:12px;margin:12px;}
+nav button{padding:10px 14px;border:none;border-radius:8px;background:#00f2ff;color:#000;font-weight:700;cursor:pointer;transition:0.2s;}
+nav button:hover{background:#0ff;}
+section{display:none;padding:12px;}
+section.active{display:block;}
+.panel{background:rgba(18,26,55,0.92);border-radius:14px;padding:12px;box-shadow:0 0 45px #00f2ff55;}
+.msg{display:flex;gap:8px;background:rgba(255,255,255,0.08);border-radius:12px;padding:8px;margin-bottom:8px;align-items:center;position:relative;}
+.avatar{width:32px;text-align:center;}
 .content span{color:#00f2ff;font-weight:600;}
-.points{font-size:12px;color:#aaa;margin-left:auto;}
+.points{font-size:11px;color:#aaa;margin-left:auto;}
 .delete{position:absolute;top:6px;right:8px;cursor:pointer;color:#ff4d4d;font-weight:bold;}
-.section-title{font-weight:700;font-size:16px;margin-bottom:10px;text-align:center;}
+input, select, textarea, button{margin:4px 0;padding:8px;border-radius:8px;border:none;outline:none;}
+button.send{background:#0ff;font-weight:700;color:#000;cursor:pointer;}
 </style>
 </head>
 <body>
 
-<div class="dashboard">
-  <div class="header">👑 Admin Dashboard</div>
-  <div class="sections">
-    <!-- Messages -->
-    <div class="messages-section">
-      <div class="section-title">Meldinger</div>
-      <div id="messages"></div>
-    </div>
-    <!-- Points -->
-    <div class="points-section">
-      <div class="section-title">Poeng</div>
-      <div id="pointsList"></div>
-    </div>
-  </div>
-</div>
+<header>VHM Admin Dashboard</header>
+<nav>
+  <button onclick="openPanel('registration')">Elevregistrering</button>
+  <button onclick="openPanel('survey')">Elevundersøkelse</button>
+  <button onclick="openPanel('chat')">Chat Wall</button>
+  <button onclick="openPanel('leaderboard')">Leaderboard</button>
+</nav>
+
+<!-- Elevregistrering -->
+<section id="registration" class="panel">
+  <h2>Ny elevregistrering</h2>
+  <div id="new-requests"></div>
+</section>
+
+<!-- Elevundersøkelse -->
+<section id="survey" class="panel">
+  <h2>Elevundersøkelse</h2>
+  <div id="survey-responses"></div>
+</section>
+
+<!-- Chat wall -->
+<section id="chat" class="panel">
+  <h2>Chat Wall</h2>
+  <div id="messages" style="max-height:400px;overflow-y:auto;"></div>
+</section>
+
+<!-- Leaderboard -->
+<section id="leaderboard" class="panel">
+  <h2>Leaderboard</h2>
+  <div id="leaderboard-list"></div>
+</section>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
 
 <script>
+// === Firebase Config ===
+const firebaseConfig = {
+  apiKey: "DIN_API_KEY",
+  authDomain: "DITT_PROJECT_ID.firebaseapp.com",
+  databaseURL: "https://DITT_PROJECT_ID-default-rtdb.firebaseio.com",
+  projectId: "DITT_PROJECT_ID",
+  storageBucket: "DITT_PROJECT_ID.appspot.com",
+  messagingSenderId: "DIN_SENDER_ID",
+  appId: "DIN_APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const storage = firebase.storage();
+
+// === Panels ===
+function openPanel(panel){
+  document.querySelectorAll('section.panel').forEach(sec=>sec.classList.remove('active'));
+  document.getElementById(panel).classList.add('active');
+}
+
+// === Admin info ===
 const ADMIN_NAME="Markuss";
 const ADMIN_CODE="664242";
 
-// Demo-elever + avatars
-const avatars={
-  Nicholas:"🧑‍💻", Eliam:"🧠", Markuss:"👑", Sofia:"✨",
-  Alexandra:"🌸", Kaia:"🌊", Tobias:"⚡", Oliver:"🚀",
-  cristi:"🔥"
-};
+// === Elevregistrering ===
+const newRequestsDiv=document.getElementById("new-requests");
+db.ref('pendingUsers').on('value', snapshot=>{
+  newRequestsDiv.innerHTML="";
+  snapshot.forEach(snap=>{
+    const user = snap.val();
+    const key = snap.key;
+    const div=document.createElement('div');
+    div.innerHTML=`<p>Navn:${user.name}, Telefon:${user.phone}, Kode:${user.code}, Fødselsår:${user.birthYear}</p>
+      <button id="accept-${key}">Accept</button>
+      <button id="decline-${key}">Decline</button>`;
+    newRequestsDiv.appendChild(div);
 
-// Demo data – senere kobles til chat
-let storedMessages=[
-  {name:"Nicholas",avatar:"🧑‍💻",text:"Hei!",pts:5,admin:false},
-  {name:"Markuss",avatar:"👑",text:"Alt under kontroll",pts:20,admin:true},
-  {name:"Sofia",avatar:"✨",text:"Hvordan går det?",pts:7,admin:false}
-];
-let points={Nicholas:5,Markuss:20,Sofia:7};
-
-const messagesDiv=document.getElementById("messages");
-const pointsDiv=document.getElementById("pointsList");
-
-function renderDashboard(){
-  // Meldinger
-  messagesDiv.innerHTML="";
-  [...storedMessages].reverse().forEach((m,i)=>{
-    const msg=document.createElement("div");
-    msg.className="msg";
-    msg.innerHTML=`<div class="avatar">${typeof m.avatar==="string"?m.avatar:`<img src="${m.avatar}" style="width:28px;height:28px;border-radius:50%">`}</div>
-                   <div class="content"><span>${m.name}:</span> ${m.text}</div>
-                   <div class="points">⭐ ${m.pts}</div>`;
-    if(m.admin || m.name!=="Markuss"){ // admin kan slette alt
-      const del=document.createElement("div");
-      del.className="delete";
-      del.textContent="✖";
-      del.onclick=()=>{storedMessages.splice(storedMessages.length-1-i,1);renderDashboard();};
-      msg.appendChild(del);
-    }
-    messagesDiv.appendChild(msg);
+    document.getElementById(`accept-${key}`).onclick=()=>{
+      if(user.birthYear>=2010){ alert("Elev er for ung!"); return; }
+      db.ref('users/' + user.name).set({...user, accepted:true});
+      db.ref('pendingUsers/' + key).remove();
+    };
+    document.getElementById(`decline-${key}`).onclick=()=>{ db.ref('pendingUsers/' + key).remove(); };
   });
+});
 
-  // Poeng
-  pointsDiv.innerHTML="";
-  Object.entries(points)
-        .sort((a,b)=>b[1]-a[1])
-        .forEach(p=>{
-          const row=document.createElement("div");
-          row.className="msg";
-          row.innerHTML=`<div class="avatar">${avatars[p[0]]||"👤"}</div>
-                         <div class="content"><span>${p[0]}</span></div>
-                         <div class="points">⭐ ${p[1]}</div>`;
-          pointsDiv.appendChild(row);
-        });
+// === Elevundersøkelse ===
+const surveyDiv=document.getElementById("survey-responses");
+db.ref('surveys').on('value', snapshot=>{
+  surveyDiv.innerHTML="";
+  snapshot.forEach(snap=>{
+    const s=snap.val();
+    const div=document.createElement('div');
+    div.innerHTML=`<p>${s.name}: ${s.answer}</p>`;
+    surveyDiv.appendChild(div);
+  });
+});
+
+// === Chat ===
+const messagesDiv=document.getElementById("messages");
+let points={};
+
+function isSuspiciousTime(){ 
+  const now=new Date(); 
+  const m=now.getHours()*60+now.getMinutes(); 
+  return m>=540 && m<=870; // 09:00-14:30
 }
 
-renderDashboard();
+db.ref('messages').on('value', snapshot=>{
+  messagesDiv.innerHTML="";
+  const msgs=[];
+  snapshot.forEach(snap=>{
+    const val=snap.val(); val.key=snap.key;
+    msgs.push(val);
+  });
+  msgs.sort((a,b)=>b.timestamp-a.timestamp); // nyeste øverst
+  msgs.forEach(m=>{
+    const msg=document.createElement('div'); msg.className='msg';
+    msg.innerHTML=`<div class="avatar">${m.avatar||"👤"}</div>
+      <div class="content"><span>${m.name}:</span> ${m.text}<div class="points">⭐ ${m.pts||0}</div></div>`;
+    // Admin kan slette
+    const del=document.createElement('div'); del.className='delete'; del.textContent='✖';
+    del.onclick=()=>{ db.ref('messages').child(m.key).remove(); };
+    msg.appendChild(del);
+    messagesDiv.appendChild(msg);
+  });
+});
+
+// === Leaderboard ===
+const leaderboardDiv=document.getElementById("leaderboard-list");
+db.ref('users').on('value', snapshot=>{
+  leaderboardDiv.innerHTML="";
+  const arr=[];
+  snapshot.forEach(snap=>{
+    const u=snap.val();
+    arr.push({name:u.name, pts:u.points||0});
+  });
+  arr.sort((a,b)=>b.pts-a.pts);
+  arr.forEach(u=>{
+    const div=document.createElement('div');
+    div.innerHTML=`${u.name} - ⭐ ${u.pts}`;
+    leaderboardDiv.appendChild(div);
+  });
+});
 </script>
+
 </body>
 </html>
 
