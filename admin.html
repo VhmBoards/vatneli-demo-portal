@@ -2,70 +2,98 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Adminpanel – Markuss</title>
+<title>Admin Dashboard</title>
 <style>
-body{font-family:'Courier New',monospace;background:#0b0b0b;color:#00ffcc;padding:20px;}
-h2,h3{color:#00ffcc;text-shadow:0 0 10px #00ffcc;}
-.box{background:rgba(0,0,0,0.6);padding:15px;margin:10px 0;border:2px solid #00ffcc;border-radius:10px;}
-button{margin-left:5px;padding:5px 10px;background:#00ffcc;color:black;border:2px solid #00ffcc;cursor:pointer;transition:0.3s;}
-button:hover{background:black;color:#00ffcc;box-shadow:0 0 15px #00ffcc;}
+*{box-sizing:border-box;}
+body{margin:0;height:100vh;background:radial-gradient(circle at top,#0a102a,#000);font-family:"Segoe UI",sans-serif;color:#fff;display:flex;justify-content:center;align-items:center;}
+.dashboard{width:800px;height:90vh;background:rgba(18,26,55,0.95);border-radius:18px;display:flex;flex-direction:column;box-shadow:0 0 55px #00f2ff55;overflow:hidden;}
+.header{padding:16px;text-align:center;font-weight:800;background:linear-gradient(90deg,#00f2ff,#7b6cff);color:#000;}
+.sections{display:flex;flex:1;}
+.messages-section, .points-section{flex:1;padding:14px;overflow-y:auto;}
+.messages-section{border-right:1px solid rgba(255,255,255,0.2);}
+.msg{display:flex;gap:10px;background:rgba(255,255,255,0.08);border-radius:12px;padding:8px;margin-bottom:8px;align-items:center;position:relative;}
+.avatar{font-size:28px;width:36px;text-align:center;}
+.content span{color:#00f2ff;font-weight:600;}
+.points{font-size:12px;color:#aaa;margin-left:auto;}
+.delete{position:absolute;top:6px;right:8px;cursor:pointer;color:#ff4d4d;font-weight:bold;}
+.section-title{font-weight:700;font-size:16px;margin-bottom:10px;text-align:center;}
 </style>
 </head>
 <body>
 
-<h2>🧑‍💼 Adminpanel – Markuss</h2>
-
-<hr>
-<h3>📋 Pending-søknader</h3>
-<div id="pendingList"></div>
-
-<hr>
-<h3>📊 Elevundersøkelse – svar</h3>
-<div id="surveyList"></div>
+<div class="dashboard">
+  <div class="header">👑 Admin Dashboard</div>
+  <div class="sections">
+    <!-- Messages -->
+    <div class="messages-section">
+      <div class="section-title">Meldinger</div>
+      <div id="messages"></div>
+    </div>
+    <!-- Points -->
+    <div class="points-section">
+      <div class="section-title">Poeng</div>
+      <div id="pointsList"></div>
+    </div>
+  </div>
+</div>
 
 <script>
-// tilgangssjekk
-if(localStorage.getItem("role")!=="admin"){
-  document.body.innerHTML="ACCESS DENIED";
-}
+const ADMIN_NAME="Markuss";
+const ADMIN_CODE="664242";
 
-// Pending
-function loadPending(){
-  const pending = JSON.parse(localStorage.getItem("pending")||"[]");
-  const div = document.getElementById("pendingList");
-  div.innerHTML="";
-  pending.forEach((p,i)=>{
-    const d = document.createElement("div");
-    d.className="box";
-    d.innerHTML=`${p.name} (${p.year}) <button onclick="approve(${i})">Godkjenn</button> <button onclick="deny(${i})">Avslå</button>`;
-    div.appendChild(d);
+// Demo-elever + avatars
+const avatars={
+  Nicholas:"🧑‍💻", Eliam:"🧠", Markuss:"👑", Sofia:"✨",
+  Alexandra:"🌸", Kaia:"🌊", Tobias:"⚡", Oliver:"🚀",
+  cristi:"🔥"
+};
+
+// Demo data – senere kobles til chat
+let storedMessages=[
+  {name:"Nicholas",avatar:"🧑‍💻",text:"Hei!",pts:5,admin:false},
+  {name:"Markuss",avatar:"👑",text:"Alt under kontroll",pts:20,admin:true},
+  {name:"Sofia",avatar:"✨",text:"Hvordan går det?",pts:7,admin:false}
+];
+let points={Nicholas:5,Markuss:20,Sofia:7};
+
+const messagesDiv=document.getElementById("messages");
+const pointsDiv=document.getElementById("pointsList");
+
+function renderDashboard(){
+  // Meldinger
+  messagesDiv.innerHTML="";
+  [...storedMessages].reverse().forEach((m,i)=>{
+    const msg=document.createElement("div");
+    msg.className="msg";
+    msg.innerHTML=`<div class="avatar">${typeof m.avatar==="string"?m.avatar:`<img src="${m.avatar}" style="width:28px;height:28px;border-radius:50%">`}</div>
+                   <div class="content"><span>${m.name}:</span> ${m.text}</div>
+                   <div class="points">⭐ ${m.pts}</div>`;
+    if(m.admin || m.name!=="Markuss"){ // admin kan slette alt
+      const del=document.createElement("div");
+      del.className="delete";
+      del.textContent="✖";
+      del.onclick=()=>{storedMessages.splice(storedMessages.length-1-i,1);renderDashboard();};
+      msg.appendChild(del);
+    }
+    messagesDiv.appendChild(msg);
   });
-}
-function approve(i){
-  const pending = JSON.parse(localStorage.getItem("pending")||"[]");
-  pending.splice(i,1);
-  localStorage.setItem("pending",JSON.stringify(pending));
-  loadPending();
-}
-function deny(i){
-  const pending = JSON.parse(localStorage.getItem("pending")||"[]");
-  pending.splice(i,1);
-  localStorage.setItem("pending",JSON.stringify(pending));
-  loadPending();
-}
-loadPending();
 
-// Survey
-const surveyDiv=document.getElementById("surveyList");
-const survey=JSON.parse(localStorage.getItem("survey")||"[]");
-survey.forEach(s=>{
-  const d=document.createElement("div");
-  d.className="box";
-  d.innerHTML=`<b>${s.name}</b><br>Trivsel: ${s.trivsel}<br>Hørt: ${s.hørt}<br>Kommentar: ${s.kommentar||"-"}<br><small>${s.time}</small>`;
-  surveyDiv.appendChild(d);
-});
+  // Poeng
+  pointsDiv.innerHTML="";
+  Object.entries(points)
+        .sort((a,b)=>b[1]-a[1])
+        .forEach(p=>{
+          const row=document.createElement("div");
+          row.className="msg";
+          row.innerHTML=`<div class="avatar">${avatars[p[0]]||"👤"}</div>
+                         <div class="content"><span>${p[0]}</span></div>
+                         <div class="points">⭐ ${p[1]}</div>`;
+          pointsDiv.appendChild(row);
+        });
+}
+
+renderDashboard();
 </script>
-
 </body>
 </html>
 
